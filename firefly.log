@@ -1,0 +1,6 @@
+2021-09-17 18:37:00.307 CST,main.go:267, INFO ,goflyway 181021015134
+2021-09-17 18:37:00.363 CST,main.go:436, INFO ,Upstream config: 45.76.68.72:22222
+2021-09-17 18:37:00.363 CST,main.go:416, INFO ,Client b76c393 started: you->0.0.0.0:8100->45.76.68.72:22222
+2021-09-17 18:37:00.363 CST,main.go:412, INFO ,Web console started at 127.0.0.1:8110
+2021-09-17 18:42:06.908 CST,io.go:68, ERROR ,"Bridge: write 222.128.2.121:46985, C32, write: broken pipe"
+2021-09-17 18:44:03.916 CST,io.go:68, ERROR ,"Bridge: write 222.128.2.121:18467, C32, write: broken pipe"
