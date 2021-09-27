@@ -3,8 +3,8 @@
 # github: https://github.com/Alvin9999/new-pac/wiki/Goflyway%E5%85%8D%E8%B4%B9%E8%B4%A6%E5%8F%B7
 
 
-proxy_ip=45.76.68.72
-proxy_port=22222
+proxy_ip=104.238.141.147
+proxy_port=12345
 proxy_password=dongtaiwang.com
 local_port=8100
 goflyway_dir=`pwd`
