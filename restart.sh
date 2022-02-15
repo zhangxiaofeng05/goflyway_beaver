@@ -3,16 +3,16 @@
 # github: https://github.com/Alvin9999/new-pac/wiki/Goflyway%E5%85%8D%E8%B4%B9%E8%B4%A6%E5%8F%B7
 
 
-proxy_ip=149.28.67.180
+proxy_ip=193.53.127.148
 proxy_port=12345
 proxy_password=dongtaiwang.com
 local_port=8100
-goflyway_dir=`pwd`
+goflyway_dir=$(pwd)
 
 # kill 8100 goflyway
 # lsof -i:8100 | awk '{print $2}' | grep -v PID | xargs kill 
 pid=`netstat -tnlp | grep ':'${local_port} | awk '{print $7}' | awk -F '/' '{print $1}'`
-if [ $pid ]
+if [[ $pid ]]
 then
 	echo `date "+%Y-%m-%d %H:%M:%S  "` "goflyway exist pid:${pid} !!!  running  kill"
 	kill ${pid}
