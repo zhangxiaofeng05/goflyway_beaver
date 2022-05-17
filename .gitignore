@@ -1,2 +1,6 @@
 ### log ###
 firefly.log
+
+account.env
+
+go.sum
