@@ -8,7 +8,7 @@ local_port=8100
 goflyway_dir=/root/zhangxiaofeng/hack/goflyway/
 log_file=${goflyway_dir}firefly.log
 
-source ${goflyway_dir}account.conf
+source ${goflyway_dir}account.env
 
 # kill 8100 goflyway
 # lsof -i:8100 | awk '{print $2}' | grep -v PID | xargs kill 
@@ -23,6 +23,6 @@ fi
 
 # start goflyway
 echo `date "+%Y-%m-%d %H:%M:%S"` 'go to start goflyway!' >> ${log_file} 
-nohup ${goflyway_dir}'/goflyway' -up="${proxy_ip}:${proxy_port}" -k="${proxy_password}" -l=":"${local_port} >> ${log_file} 2>&1 &
+nohup ${goflyway_dir}'/goflyway' -up="${PROXY_IP}:${PROXY_PORT}" -k="${PROXY_PASSWORD}" -l=":"${local_port} >> ${log_file} 2>&1 &
 
 

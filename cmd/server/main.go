@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os/exec"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -21,6 +22,9 @@ const (
 	passwordGap = 9
 
 	saveFileName = "account.env"
+
+	bash_path    = "/bin/bash"
+	restart_path = "/root/zhangxiaofeng/hack/goflyway/restart.sh"
 )
 
 type goflywayDTO struct {
@@ -68,19 +72,32 @@ func getPassword(body string) (passwordStr string) {
 	return
 }
 
+func restartGoflyway() {
+	cmd, err := exec.Command(bash_path, restart_path).Output()
+	if err != nil {
+		panic(err)
+	}
+	outputString := string(cmd)
+	fmt.Println("restart success", outputString)
+}
+
 func saveToFile(dto goflywayDTO) {
 	fmt.Printf("dto %#v\n", dto)
 
 	viper.SetConfigFile(saveFileName)
 	viper.AddConfigPath(".")
 
-	viper.Set("proxy_ip", dto.IP)
-	viper.Set("proxy_port", dto.Port)
-	viper.Set("proxy_password", dto.Password)
+	viper.Set("PROXY_IP", dto.IP)
+	viper.Set("PROXY_PORT", dto.Port)
+	viper.Set("PROXY_PASSWORD", dto.Password)
 
 	err := viper.WriteConfig()
 	if err != nil {
 		panic(err)
+	}
+
+	if dto.IP != "" && dto.Port != "" && dto.Password != "" {
+		restartGoflyway()
 	}
 }
 
