@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -23,8 +25,15 @@ const (
 
 	saveFileName = "account.env"
 
-	bash_path    = "/bin/bash"
-	restart_path = "/root/zhangxiaofeng/hack/goflyway/restart.sh"
+	bashPath    = "/bin/bash"
+	restartPath = "/root/zhangxiaofeng/hack/goflyway/restart.sh"
+	curlIp      = "/root/zhangxiaofeng/hack/goflyway/curl_ip.sb.sh"
+
+	ipParam       = "IP："
+	portParam     = "端口："
+	passwordParam = "密码："
+
+	everyTime = 1 * time.Hour
 )
 
 type goflywayDTO struct {
@@ -33,47 +42,21 @@ type goflywayDTO struct {
 	Password string
 }
 
-func getIP(body string) (ipStr string) {
-	ipIndex := strings.Index(body, "IP：")
-	for i := ipIndex; i < len(body)-ipGap; i++ {
-		if body[i+ipGap] == '<' {
+func getParam(body, param string, gap int) (res string) {
+	paramIndex := strings.Index(body, param)
+	for i := paramIndex; i < len(body)-gap; i++ {
+		if body[i+gap] == '<' {
 			break
 		}
-		if body[i+ipGap] != ' ' {
-			ipStr += string([]byte{body[i+ipGap]})
-		}
-	}
-	return
-}
-
-func getPort(body string) (portStr string) {
-	portIndex := strings.Index(body, "端口：")
-	for i := portIndex; i < len(body)-portGap; i++ {
-		if body[i+portGap] == '<' {
-			break
-		}
-		if body[i+portGap] != ' ' {
-			portStr += string([]byte{body[i+portGap]})
-		}
-	}
-	return
-}
-
-func getPassword(body string) (passwordStr string) {
-	passwordIndex := strings.Index(body, "密码：")
-	for i := passwordIndex; i < len(body)-passwordGap; i++ {
-		if body[i+passwordGap] == '<' {
-			break
-		}
-		if body[i+passwordGap] != ' ' {
-			passwordStr += string([]byte{body[i+passwordGap]})
+		if body[i+gap] != ' ' {
+			res += string([]byte{body[i+gap]})
 		}
 	}
 	return
 }
 
 func restartGoflyway() {
-	cmd, err := exec.Command(bash_path, restart_path).Output()
+	cmd, err := exec.Command(bashPath, restartPath).Output()
 	if err != nil {
 		panic(err)
 	}
@@ -101,28 +84,60 @@ func saveToFile(dto goflywayDTO) {
 	}
 }
 
-func main() {
-	// TODO 调度
+func getBody() (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	defer resp.Body.Close()
 	bodyByte, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	body := string(bodyByte)
-	ip := getIP(body)
-	fmt.Println("ip:", ip)
-	port := getPort(body)
-	fmt.Println("port:", port)
-	password := getPassword(body)
-	fmt.Println("password:", password)
+	return string(bodyByte), nil
+}
+
+func getInfoAndRestart() {
+	body, err := getBody()
+	if err != nil {
+		fmt.Printf("from github get body error:%+v\n", err)
+	}
+	ip := getParam(body, ipParam, ipGap)
+	port := getParam(body, portParam, portGap)
+	password := getParam(body, passwordParam, passwordGap)
 
 	saveToFile(goflywayDTO{
 		IP:       ip,
 		Port:     port,
 		Password: password,
 	})
+
+}
+
+func timerWork() {
+	for {
+		timer := time.NewTimer(everyTime)
+		select {
+		case <-timer.C:
+			fmt.Println(time.Now())
+			out, err := exec.Command(bashPath, curlIp).Output()
+			if err != nil {
+				log.Printf("proxychain curl ip.sb error:%+v\n", err)
+				getInfoAndRestart()
+			}
+			outStr := string(out)
+			if outStr == "" {
+				log.Println("ourStr is nil")
+			} else {
+				// TODO 比较ip和配置ip是否一致
+				fmt.Println(curlIp, " : ", outStr)
+			}
+		}
+	}
+}
+
+func main() {
+	go timerWork()
+	for {
+	}
 }
